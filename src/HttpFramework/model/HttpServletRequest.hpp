@@ -13,7 +13,7 @@ namespace Http {
 
 /**
  * Represents an HTTP request.
- * StringT - need to have 'char operator[]' and 'length()' 
+ * StringT - need to have 'char operator[]', 'length()' and operator+= 
  * 
  */
 template<class StringT>
@@ -56,6 +56,11 @@ public:
 			return true;
 		}
 
+		template<class StringT2>
+		bool operator!=(const StringT2& other) const{
+			return !operator==(other);
+		}
+
 		/*template<>
 		bool eq(const char* other) {
 			int io = 0;
@@ -69,6 +74,16 @@ public:
 				return false;
 			return true;
 		}*/
+
+		/**
+		 * Need operator+= to concat
+		 */
+		explicit operator StringT() const {
+			StringT str;
+			for(int i = _startIndx; i <= _endIndx; i++)
+				str += _source[i];
+			return str;
+		}
 
 		/**
 		 * trying to cast the token to an int 
@@ -108,7 +123,7 @@ public:
 	 * Careful not sending rvalue to here..
 	 */
 	HttpServletRequest(const StringT& requestBody, Http::HTTPMethod httPMethod, const StringT& url) :
-			requestBody(requestBody), httPMethod(httPMethod), url(url) {
+			url(url), requestBody(requestBody), httPMethod(httPMethod) {
 		addURLTokens(url);
 	}
 
