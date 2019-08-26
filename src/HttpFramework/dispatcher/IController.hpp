@@ -5,7 +5,7 @@
 
 namespace Http {
 
-template <class AcceptableType>
+template <class AcceptableType, class StringT>
 class IController {
 public:
 
@@ -14,8 +14,8 @@ public:
 	virtual ~IController(){
 	}
 
-	virtual bool canHandle(HttpServletRequest& req)=0;
-	virtual std::shared_ptr<AcceptableType> handle(HttpServletRequest& req, HttpServletResponse& response)=0;
+	virtual bool canHandle(HttpServletRequest<StringT>& req)=0;
+	virtual std::shared_ptr<AcceptableType> handle(HttpServletRequest<StringT>& req, HttpServletResponse<StringT>& response)=0;
 };
 
 } /* namespace Http */

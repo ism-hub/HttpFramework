@@ -77,7 +77,7 @@ public:
 
 //**** serialization visitor ****
 class DelearshipSerializerVisitor : public IDealershipVisitor {
-    Http::SerializationVisitor<DelearshipSerializer> serVisitor; 
+    Http::SerializationVisitor<DelearshipSerializer, std::string> serVisitor; 
 public:
     DelearshipSerializerVisitor() : serVisitor(std::make_shared<DelearshipSerializer>()){}
 
@@ -90,34 +90,34 @@ public:
 };
 
 //*************************** HTTP framework constructs ***************************
-class CarController : public Http::IController<IDealershipAcceptable> {
+class CarController : public Http::IController<IDealershipAcceptable, std::string> {
 protected:
     CarDealership& _dealership;
 
 public:
     CarController(CarDealership& dealership) : _dealership(dealership) {}
 
-	virtual bool canHandle(Http::HttpServletRequest& req) override {
-        return req.urlTokens[0] == "Cars"; 
+	virtual bool canHandle(Http::HttpServletRequest<std::string>& req) override {
+        return req.urlTokens[0] == std::string("Cars"); 
     }
-	virtual std::shared_ptr<IDealershipAcceptable> handle(Http::HttpServletRequest& req, Http::HttpServletResponse& response) override {
-        return std::make_shared<Car>(_dealership.cars[std::stoi(req.urlTokens[1])]);
+	virtual std::shared_ptr<IDealershipAcceptable> handle(Http::HttpServletRequest<std::string>& req, Http::HttpServletResponse<std::string>& response) override {
+        return std::make_shared<Car>(_dealership.cars[req.urlTokens[1].stoi()]);
     }
 
 };
 
-class StoreController : public Http::IController<IDealershipAcceptable> {
+class StoreController : public Http::IController<IDealershipAcceptable, std::string> {
 protected:
     CarDealership& _dealership;
 
 public:
     StoreController(CarDealership& dealership) : _dealership(dealership) {}
 
-	virtual bool canHandle(Http::HttpServletRequest& req) override {
-        return req.urlTokens[0] == "Stores"; 
+	virtual bool canHandle(Http::HttpServletRequest<std::string>& req) override {
+        return req.urlTokens[0] == std::string("Stores"); 
     }
-	virtual std::shared_ptr<IDealershipAcceptable> handle(Http::HttpServletRequest& req, Http::HttpServletResponse& response) override {
-        return std::make_shared<Store>(_dealership.stores[std::stoi(req.urlTokens[1])]);
+	virtual std::shared_ptr<IDealershipAcceptable> handle(Http::HttpServletRequest<std::string>& req, Http::HttpServletResponse<std::string>& response) override {
+        return std::make_shared<Store>(_dealership.stores[req.urlTokens[1].stoi()]);
     }
 };
 
@@ -126,22 +126,22 @@ int main(){
     CarDealership dealership;
 
     //creating the execution chains (for car and store)
-    auto jsonInterceptor = std::make_shared<Http::SerializationInterceptor<DelearshipSerializerVisitor, IDealershipAcceptable>>(std::make_shared<DelearshipSerializerVisitor>());
+    auto jsonInterceptor = std::make_shared<Http::SerializationInterceptor<DelearshipSerializerVisitor, IDealershipAcceptable, std::string>>(std::make_shared<DelearshipSerializerVisitor>());
 
     auto carController = std::make_shared<CarController>(dealership);
     auto storeController = std::make_shared<StoreController>(dealership);
 
-    auto carExecutionchain = std::make_shared<Http::HandlerExecutionChain2<IDealershipAcceptable>>(carController);
-    auto storeExecutionchain = std::make_shared<Http::HandlerExecutionChain2<IDealershipAcceptable>>(storeController);
+    auto carExecutionchain = std::make_shared<Http::HandlerExecutionChain2<IDealershipAcceptable, std::string>>(carController);
+    auto storeExecutionchain = std::make_shared<Http::HandlerExecutionChain2<IDealershipAcceptable, std::string>>(storeController);
 
     carExecutionchain->addInterceptor(jsonInterceptor);
     storeExecutionchain->addInterceptor(jsonInterceptor);
 
     //creating the dispatcher and handling messages 
-    Http::DispatcherServlet dispatcher{carExecutionchain, storeExecutionchain};
+    Http::DispatcherServlet<std::string> dispatcher{carExecutionchain, storeExecutionchain};
 
     //requesting and getting car
-    Http::HttpServletRequest reqCar(""/*body*/, Http::HTTPMethod::HTTP_GET, "/Cars/0/"/*url*/);
+    Http::HttpServletRequest<std::string> reqCar(""/*body*/, Http::HTTPMethod::HTTP_GET, "/Cars/0/"/*url*/);
 
     auto resCar = dispatcher.dispatch(reqCar);
 
@@ -152,7 +152,7 @@ int main(){
     std::cout << std::endl;
 
     //requesting and getting store
-    Http::HttpServletRequest reqStore(""/*body*/, Http::HTTPMethod::HTTP_GET, "/Stores/1/"/*url*/);
+    Http::HttpServletRequest<std::string> reqStore(""/*body*/, Http::HTTPMethod::HTTP_GET, "/Stores/1/"/*url*/);
 
     auto resStore = dispatcher.dispatch(reqStore);
 

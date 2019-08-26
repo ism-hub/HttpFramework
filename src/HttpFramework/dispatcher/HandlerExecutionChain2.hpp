@@ -14,26 +14,26 @@ namespace Http {
  * The interceptors are usually provided by the framework and manages things like serialization of the user domain or checking security token.
  * The interceptors run on the request befor the controller (user code) and after.
  */
-template <class AcceptableType>
-class HandlerExecutionChain2 : public IHandlerExecutionChain {
+template <class AcceptableType, class StringT>
+class HandlerExecutionChain2 : public IHandlerExecutionChain<StringT> {
 protected:
-	std::shared_ptr<IController<AcceptableType>> _controller;
-	std::vector<std::shared_ptr<IHandlerInterceptor<AcceptableType>>> _handlerInterceptors;
+	std::shared_ptr<IController<AcceptableType, StringT>> _controller;
+	std::vector<std::shared_ptr<IHandlerInterceptor<AcceptableType, StringT>>> _handlerInterceptors;
 
 public:
-	HandlerExecutionChain2(std::shared_ptr<IController<AcceptableType>> controller) : _controller(controller) {}
+	HandlerExecutionChain2(std::shared_ptr<IController<AcceptableType, StringT>> controller) : _controller(controller) {}
 	virtual ~HandlerExecutionChain2() {}
 
-	void addInterceptor(std::shared_ptr<IHandlerInterceptor<AcceptableType>> interceptor){
+	void addInterceptor(std::shared_ptr<IHandlerInterceptor<AcceptableType, StringT>> interceptor){
 		_handlerInterceptors.push_back(interceptor);
 	}
 
-	bool canHandle(HttpServletRequest& req) override {
+	bool canHandle(HttpServletRequest<StringT>& req) override {
 		return _controller->canHandle(req);
 	}
 
-	std::shared_ptr<HttpServletResponse> execute(HttpServletRequest& req) override {
-		std::shared_ptr<HttpServletResponse> response = std::make_shared<HttpServletResponse>();
+	std::shared_ptr<HttpServletResponse<StringT>> execute(HttpServletRequest<StringT>& req) override {
+		std::shared_ptr<HttpServletResponse<StringT>> response = std::make_shared<HttpServletResponse<StringT>>();
 		//HandlerInterceptors before handle (every one return bool if returned true than we need to stop the execution)
 		for (unsigned int i = 0; i < _handlerInterceptors.size(); i++) {
 			if (!_handlerInterceptors[i]->preHandle(req, *response, *_controller)) // if false then the Interceptor handled the response

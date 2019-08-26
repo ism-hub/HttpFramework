@@ -9,7 +9,7 @@ namespace Http {
  * Input: An acceptable object.
  * Output: Serialization string.
  */
-template <class Serializer>
+template <class Serializer, class StringT>
 class SerializationVisitor {
 	std::shared_ptr<Serializer> serializer = nullptr;
 public:
@@ -18,8 +18,8 @@ public:
 
 	template <class Model>
 	std::shared_ptr<void> visit(Model& model) {
-		std::shared_ptr<std::string> serialized = std::make_shared<std::string>();
-		serialized->reserve(2500);
+		std::shared_ptr<StringT> serialized = std::make_shared<StringT>();
+		//serialized->reserve(2500);
 		//if(!serialized->reserve(2500))//TODO:
 		//	return nullptr;
 			//Serial.println(F("___ERROR: failed to reserve 2500 bytes for the SerializationVisitor string"));
