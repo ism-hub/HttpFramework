@@ -1,4 +1,4 @@
-# Http Framework
+# HTTP Framework
 This framework will be reworked in the next week or two so this file is less concerned with how to use the current version and more concerned about the big picture and the changes that will come.
 If you still interested in using it you can check out the detailed example in the examples folder. 
 
