@@ -38,7 +38,7 @@ public:
     GardenController(shared_ptr<ServiceWeWant> someService)  : _someService(someService) {}
 
     [[GET, "/plants/:id"]]
-    Plant plantRequest(int id){
+    const Plant& plantRequest(int id){
         //...
         return plant;
     }
